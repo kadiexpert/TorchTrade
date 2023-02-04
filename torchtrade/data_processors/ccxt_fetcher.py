@@ -1,4 +1,3 @@
-import typing
 from typing import Optional
 from datetime import datetime,timezone
 import pandas as pd
@@ -21,6 +20,11 @@ class DataFetcher:
         self.timeframe = timeframe
         self.since = since
         self.until = until
+        self.first_timestamp=None
+        self.last_timestamp = None
+        self.step = None
+        self.exchange = None
+
         
     def _get_first_candle_timestamp(self):
         """
@@ -60,12 +64,12 @@ class DataFetcher:
         """
         Sets the start and end timestamps of the data to fetch.
         """
-        self.firstTimestamp = self._get_first_candle_timestamp()
+        self.first_timestamp = self._get_first_candle_timestamp()
         
         if self.until is None:
-            self.lastTimestamp = int(datetime(datetime.today().year,datetime.today().month,datetime.today().day,tzinfo=timezone.utc).timestamp()*1000)
+            self.last_timestamp = int(datetime(datetime.today().year,datetime.today().month,datetime.today().day,tzinfo=timezone.utc).timestamp()*1000)
         else:
-            self.lastTimestamp = int(self.until.replace(tzinfo=timezone.utc).timestamp()*1000)
+            self.last_timestamp = int(self.until.replace(tzinfo=timezone.utc).timestamp()*1000)
             
     def _calculate_step(self):
         """
@@ -105,9 +109,9 @@ class DataFetcher:
         self._set_timestamps()
         self._calculate_step()
 
-        print(f"Fetching {self.timeframe} timeframe data since {datetime.utcfromtimestamp(self.firstTimestamp/1000)} until {datetime.utcfromtimestamp(self.lastTimestamp/1000)}")
+        print(f"Fetching {self.timeframe} timeframe data since {datetime.utcfromtimestamp(self.first_timestamp/1000)} until {datetime.utcfromtimestamp(self.last_timestamp/1000)}")
         index_names = pd.MultiIndex.from_product(
-            [self.symbols, range(self.firstTimestamp, self.lastTimestamp + self.step, self.step)]
+            [self.symbols, range(self.first_timestamp, self.last_timestamp + self.step, self.step)]
         )
         column_names = ["isTraded", "open", "high", "low", "close", "volume"]
 
@@ -116,17 +120,14 @@ class DataFetcher:
 
         for index, symbol in enumerate(self.symbols):
             ohlcv = []
-            timestamp = self.firstTimestamp
-            while timestamp <= self.lastTimestamp:
+            timestamp = self.first_timestamp
+            while timestamp <= self.last_timestamp:
                 ohlcv += self.exchange.fetch_ohlcv(self.symbols[index], self.timeframe, timestamp, limit=300000)
                 timestamp = ohlcv[-1][0] + 1000
             for candle in ohlcv:
                 key = (symbol, candle[0])
                 if key in df.index:
                     df.loc[key] = [1] + candle[1:]
-                    
-        """Some candles might be missing because of exchange maintenance, migration ...
-           in this case we set "isTraded" to zero and we set all the values to zero as well
-        """
+                
         df.loc[df.isnull().any(axis=1), :] = 0
         return df
