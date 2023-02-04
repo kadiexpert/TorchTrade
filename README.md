@@ -3,6 +3,7 @@
 ## Concept
 
 TorchTrade is a framework for building RL agents that specialize in cryptocurrency trading, but can be extended to trade stocks, commodities, and more. As a newbie to RL, I am committed to building this framework in parallel with my learning process. Each week, I will study, implement, and test one algorithm. If the algorithm yields successful results, it will be deployed for live trading, with the trades and results made public, allowing us to track the performance of each algorithm and identify potential improvements.
+
 This project is mainly developed for research and exploration of the capabilities of AI. However, it is important to be cautious when using it in a live trading environment as the results may not always be reliable and accurate.
 
 ## One Week One algorithm
