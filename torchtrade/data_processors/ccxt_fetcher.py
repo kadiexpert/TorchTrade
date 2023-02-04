@@ -1,7 +1,7 @@
 import typing
 from typing import Optional
-import pandas as pd
 from datetime import datetime,timezone
+import pandas as pd
 import ccxt
 
 class DataFetcher:
