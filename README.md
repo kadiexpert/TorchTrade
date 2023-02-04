@@ -6,7 +6,7 @@ TorchTrade is a framework for building RL agents that specialize in cryptocurren
 
 ## One Week One algorithm
 
-- [ ] **Week 1**: Building **DataProcessor** class responsible for retrieving, formatting and cleaning Bitcoin historical OHLVC data. This class will be extended later to fetch multiple coins data and add technical indicators.
+- [X] **Week 1**: Building **DataProcessor** class responsible for retrieving, formatting and cleaning Bitcoin historical OHLVC data. This class will be extended later to fetch multiple coins data and add technical indicators.
 
 - [ ] **Week 2**: **Vanilla Policy Gradient**: Study, Train, Test, evaluate, and run on the cloud.
 
