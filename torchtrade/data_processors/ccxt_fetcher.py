@@ -7,7 +7,7 @@ from datetime import datetime,timezone
 import pandas as pd
 import ccxt
 
-class DataFetcher:
+class CcxtFetcher:
     """
     Class for fetching financial data from a given exchange source, symbols, and timeframe.
     
