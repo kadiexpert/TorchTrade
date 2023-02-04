@@ -1,3 +1,7 @@
+""""
+    Module for fetching crypto data from a given exchange source
+"""
+
 from typing import Optional
 from datetime import datetime,timezone
 import pandas as pd
@@ -14,7 +18,14 @@ class DataFetcher:
     since (datetime, optional): The start date of the data to fetch. Defaults to 2015/01/01.
     until (datetime, optional): The end date of the data to fetch. Defaults to None.
     """
-    def __init__(self, source: str, symbols: list, timeframe: str, since: Optional[datetime]=datetime(2015,1,1), until: Optional[datetime]=None):
+    def __init__(
+            self,
+            source: str,
+            symbols: list,
+            timeframe: str,
+            since: Optional[datetime]=datetime(2015,1,1),
+            until: Optional[datetime]=None
+        ):
         self.source = source
         self.symbols = symbols
         self.timeframe = timeframe
@@ -25,7 +36,6 @@ class DataFetcher:
         self.step = None
         self.exchange = None
 
-        
     def _get_first_candle_timestamp(self):
         """
         Returns the earliest candle timestamp in milliseconds
@@ -36,14 +46,14 @@ class DataFetcher:
             ohlcv = self.exchange.fetch_ohlcv(symbol, self.timeframe, start_timestamp, limit=1)
             listing_dt += [ohlcv[0][0]]
         return min(listing_dt)
-    
+
     def _check_fetch_ohlcv(self):
         """
         Checks if the exchange source allows fetching of OHLCV data.
         """
         if not self.exchange.has["fetchOHLCV"]:
             raise ValueError(f"{self.source} doesn't allow OHLCV fetching")
-        
+
     def _check_timeframe_supported(self):
         """
         Checks if the specified timeframe is supported by the exchange source.
@@ -51,26 +61,26 @@ class DataFetcher:
         supported_timeframes = self.exchange.timeframes
         if  not self.timeframe.lower() in [k.lower() for k in supported_timeframes.keys()]:
             raise ValueError(f"{self.timeframe} timeframe not supported by {self.source}")
-        
+
     def _check_symbols_supported(self):
         """
         Checks if all symbols in `symbols` are supported by the exchange source.
         """
         for symbol in self.symbols:
-            if not (symbol  in self.exchange.symbols):
+            if not symbol  in self.exchange.symbols:
                 raise ValueError(f"{symbol} not supported by {self.source}")
-                
+
     def _set_timestamps(self):
         """
         Sets the start and end timestamps of the data to fetch.
         """
         self.first_timestamp = self._get_first_candle_timestamp()
-        
+
         if self.until is None:
             self.last_timestamp = int(datetime(datetime.today().year,datetime.today().month,datetime.today().day,tzinfo=timezone.utc).timestamp()*1000)
         else:
             self.last_timestamp = int(self.until.replace(tzinfo=timezone.utc).timestamp()*1000)
-            
+
     def _calculate_step(self):
         """
         Calculate the number of milliseconds represented by the given time string
@@ -85,9 +95,9 @@ class DataFetcher:
         unit = self.timeframe[-1].lower()
         if unit not in units:
             raise ValueError("Invalid timeframe")
-        
+
         self.step =number * units[unit]
-            
+
     def fetch_data(self):
         """
         This method is used to fetch the OHLCV data for the specified symbols and time frame.
@@ -115,19 +125,24 @@ class DataFetcher:
         )
         column_names = ["isTraded", "open", "high", "low", "close", "volume"]
 
-        df = pd.DataFrame(index=index_names, columns=column_names)
-        df.rename_axis(["symbol","timestamp"], axis=0, inplace=True)
+        data = pd.DataFrame(index=index_names, columns=column_names)
+        data.rename_axis(["symbol","timestamp"], axis=0, inplace=True)
 
         for index, symbol in enumerate(self.symbols):
             ohlcv = []
             timestamp = self.first_timestamp
             while timestamp <= self.last_timestamp:
-                ohlcv += self.exchange.fetch_ohlcv(self.symbols[index], self.timeframe, timestamp, limit=300000)
+                ohlcv += self.exchange.fetch_ohlcv(
+                    self.symbols[index],
+                    self.timeframe,
+                    timestamp,
+                    limit=300000
+                    )
                 timestamp = ohlcv[-1][0] + 1000
             for candle in ohlcv:
                 key = (symbol, candle[0])
-                if key in df.index:
-                    df.loc[key] = [1] + candle[1:]
-                
-        df.loc[df.isnull().any(axis=1), :] = 0
-        return df
+                if key in data.index:
+                    data.loc[key] = [1] + candle[1:]
+
+        data.loc[data.isnull().any(axis=1), :] = 0
+        return data
