@@ -145,4 +145,6 @@ class CcxtFetcher:
                     data.loc[key] = [1] + candle[1:]
 
         data.loc[data.isnull().any(axis=1), :] = 0
+        data.index = data.index.set_levels(pd.to_datetime(data.index.levels[1], unit='ms'), level=1)
+
         return data
