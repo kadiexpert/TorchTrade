@@ -13,6 +13,7 @@ class Clock:
         self.initial_timestamp = timestamp
         self.timestamp = timestamp
         self.timeframe = pd.Timedelta(timeframe)
+        self.observers = []
         
     def configure(self,timestamp: pd.Timestamp,timeframe: str ):
         """
@@ -25,12 +26,14 @@ class Clock:
         self.initial_timestamp = timestamp
         self.timestamp = timestamp
         self.timeframe = pd.Timedelta(timeframe)
+        
 
     def reset(self) -> None:
         """
         Reset the clock to its initial timestamp.
         """
         self.timestamp = self.initial_timestamp
+        self.notify_observers()
 
     def next(self) ->  pd.Timestamp:
         """
@@ -40,6 +43,7 @@ class Clock:
         pd.Timestamp: The current time of the clock.
         """
         self.timestamp += self.timeframe
+        self.notify_observers()
         return self.timestamp
 
     def currentTime(self) -> pd.Timestamp:
@@ -50,3 +54,20 @@ class Clock:
         pd.Timestamp: The current time of the clock.
         """
         return self.timestamp
+    
+    def register_observer(self, observer):
+        """
+        Register an observer to receive notifications from the clock.
+
+        Parameters:
+        observer: The observer to register.
+        """
+        self.observers.append(observer)
+        observer.update_timestamp(self.timestamp)
+    
+    def notify_observers(self):
+        """
+        Notify all registered observers that the clock has advanced.
+        """
+        for observer in self.observers:
+            observer.update_timestamp(self.timestamp)
