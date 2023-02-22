@@ -56,6 +56,12 @@ class Trade:
         self.take_profit_price = None
         self.market = market
         self.market.register_observer(self)
+        self.close_price = None
+        self.close_timestamp = None
+        self.realized_pnl = 0
+        self.realized_pnl_percentage = 0
+        self.realized_pnl_percentage_discounted = 0
+        self.time_in_trade = 0
 
    
     # We can omit this function if we notify at subscription
