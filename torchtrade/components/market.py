@@ -43,6 +43,7 @@ class Market:
             observer (object): The observer to be registered.
         """
         self.observers.append(observer)
+        observer.update(self.data)
         
     def unregister_observer(self, observer):
         """Unregister an observer from the market."""
@@ -52,5 +53,5 @@ class Market:
     def notify_observers(self):
         """Notify all registered observers with the updated market data."""
         for observer in self.observers:
-            observer.update_mktData(self.data)
+            observer.update(self.data)
 
