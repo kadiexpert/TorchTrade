@@ -18,7 +18,7 @@ class TradeStatus(Enum):
 
     
 class Trade:
-    """An abstract base class representing a trade.
+    """Class representing a trade.
       order are only market, or market at a certain timestamp
     
     """
@@ -62,9 +62,6 @@ class Trade:
         self.realized_pnl_percentage = 0
         self.realized_pnl_percentage_discounted = 0
         self.time_in_trade = 0
-
-   
-    # We can omit this function if we notify at subscription
     
     def update(self, market_data):
         if self.status is TradeStatus.CLOSED or self.status is TradeStatus.REJECTED:
