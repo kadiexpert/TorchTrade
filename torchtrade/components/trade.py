@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import final,Tuple,Optional
 from torchtrade.components.market import Market
 import pandas as pd
