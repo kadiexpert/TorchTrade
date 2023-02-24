@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import Optional
+from torchtrade.components.trade import Trade, TradeStatus
 
 class Market:
     """A class that provides data feed for multiple assets.
@@ -51,7 +52,15 @@ class Market:
             self.observers.remove(observer)
             
     def notify_observers(self):
-        """Notify all registered observers with the updated market data."""
+        """
+        Notify all registered observers with the updated market data.
+        """
+        # Remove any closed or rejected trades from the observers list
+        self.observers = [observer for observer in self.observers 
+                        if not (isinstance(observer, Trade) and observer.status in [TradeStatus.CLOSED, TradeStatus.REJECTED])]
+        
+        # Update the remaining observers with the new data
         for observer in self.observers:
             observer.update(self.data)
+
 
