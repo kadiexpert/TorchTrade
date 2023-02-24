@@ -323,7 +323,7 @@ Trade Details:
     Closing Time: {self.close_timestamp}
     Entry Price: {self.fill_price}
     Time In Trade : {self.time_in_trade}
-    Stop Loss %: {self.stop_loss*100}
+    Stop Loss %: {self.stop_loss}
     Risk Reward: {self.risk_reward}
     Stop Loss Price: {self.stop_loss_price}
     Take Profit Price: {self.take_profit_price}
