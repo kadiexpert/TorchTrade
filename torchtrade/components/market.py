@@ -62,5 +62,11 @@ class Market:
         # Update the remaining observers with the new data
         for observer in self.observers:
             observer.update(self.data)
+            
+    def reset(self):
+        """Reset the market but keep data in the market
+        """
+        self.timestamp = None
+        self.observers = []
 
 
