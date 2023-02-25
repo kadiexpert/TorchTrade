@@ -270,7 +270,7 @@ class Trade:
         self.status = TradeStatus.CLOSED
         self.paid_commission += price*self.quantity*self.commission
         
-        self.realized_pnl -= self.paid_commission
+        self.realized_pnl -= price*self.quantity*self.commission
         self.realized_pnl += self.direction.value* ((self.quantity * price) - (self.quantity*self.fill_price))
         self.realized_pnl_percentage =  self.realized_pnl /(self.quantity*self.fill_price)
         self.realized_pnl_percentage_discounted = self.realized_pnl_percentage * (self.discount**self.time_in_trade) 
