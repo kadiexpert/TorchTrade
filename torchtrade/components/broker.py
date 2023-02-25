@@ -107,6 +107,17 @@ class Broker:
         losing_trades = [trade for trade in self.trades if trade.status is TradeStatus.CLOSED and trade.realized_pnl < 0]
         return len(losing_trades)
     
+    def get_additive_reward_percentage(self) -> float :
+        additive_reward_percentage = 0.0
+        for trade in self.trades:
+            if trade.status is TradeStatus.CLOSED:
+                additive_reward_percentage+=trade.realized_pnl_percentage
+        return additive_reward_percentage
+    
+    def reset(self):
+        self.trades = []
+        
+    
     def __str__(self) -> str: 
         return  f"""
 Timestamp: {self.market.timestamp}

@@ -152,7 +152,9 @@ class BinanceFetcher:
         # Adding Technical indicators 
         if self.include_technical_indicators:
             data = self.add_technical_indicators(data)
-
+            
+        data = data.dropna(how='any')
+        #We may need to check that data is continuous
         return data
     
     def add_technical_indicators(self, data):

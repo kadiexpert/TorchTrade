@@ -2,50 +2,46 @@ import pandas as pd
 from typing import Any
 
 class Clock:
-    def __init__(self, timestamp: pd.Timestamp = pd.Timestamp("now"), timeframe: str = "1m"):
+    
+    def __init__(self, start_timestamp: pd.Timestamp, end_timestamp: pd.Timestamp, timeframe: str = "1m"):
         """
-        Initialize the clock with a given timestamp and timeframe.
+        Initialize the clock with a given start and end timestamp and timeframe.
 
         Parameters:
-        timestamp (pd.Timestamp, optional): The initial timestamp for the clock. Defaults to the current time.
+        start_timestamp (pd.Timestamp): The start timestamp for the clock.
+        end_timestamp (pd.Timestamp): The end timestamp for the clock.
         timeframe (str, optional): The time interval for the clock, in the format "1m" for 1 minute or "3h" for 3 hours. Defaults to "1m".
         """
-        self.initial_timestamp = timestamp
-        self.timestamp = timestamp
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+        self.timestamp = start_timestamp
         self.timeframe = pd.Timedelta(timeframe)
         self.observers = []
-        
-    def configure(self,timestamp: pd.Timestamp,timeframe: str ):
-        """
-        Configure the clock with a given timestamp and timeframe. The clock is reset after configuration
-        
-        Parameters:
-        timestamp (pd.Timestamp): The initial timestamp for the clock.
-        timeframe (str): The time interval for the clock, in the format "1m" for 1 minute or "3h" for 3 hours.
-        """
-        self.initial_timestamp = timestamp
-        self.timestamp = timestamp
-        self.timeframe = pd.Timedelta(timeframe)
         
 
     def reset(self) -> None:
         """
-        Reset the clock to its initial timestamp.
+        Reset the clock to its start timestamp.
         """
-        self.timestamp = self.initial_timestamp
+        self.timestamp = self.start_timestamp
         self.reset_observers()
         self.notify_observers()
 
-    def next(self) ->  pd.Timestamp:
+    def next(self) -> pd.Timestamp:
         """
         Increment the clock by its time interval.
         
         Returns:
         pd.Timestamp: The current time of the clock.
         """
-        self.timestamp += self.timeframe
+        next_timestamp = self.timestamp + self.timeframe
+        if next_timestamp > self.end_timestamp:
+             ValueError("Current time has passed the end timestamp.")
+             
+        self.timestamp = next_timestamp
         self.notify_observers()
         return self.timestamp
+
 
     def currentTime(self) -> pd.Timestamp:
         """
@@ -79,4 +75,12 @@ class Clock:
         """
         for observer in self.observers:
             observer.reset()
-        
+    
+    def has_reached_end(self) -> bool:
+        """
+        Check if the current timestamp has reached the end timestamp.
+
+        Returns:
+        bool: True if the current timestamp has reached the end timestamp, False otherwise.
+        """
+        return self.timestamp >= self.end_timestamp
