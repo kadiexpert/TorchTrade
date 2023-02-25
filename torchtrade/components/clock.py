@@ -33,6 +33,7 @@ class Clock:
         Reset the clock to its initial timestamp.
         """
         self.timestamp = self.initial_timestamp
+        self.reset_observers()
         self.notify_observers()
 
     def next(self) ->  pd.Timestamp:
@@ -71,3 +72,11 @@ class Clock:
         """
         for observer in self.observers:
             observer.update_timestamp(self.timestamp)
+            
+    def reset_observers(self):
+        """
+        Reset all registered observers 
+        """
+        for observer in self.observers:
+            observer.reset()
+        
