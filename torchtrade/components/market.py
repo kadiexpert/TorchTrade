@@ -1,6 +1,8 @@
 import pandas as pd
 from typing import Optional
 from torchtrade.components.trade import Trade, TradeStatus
+import multiprocessing
+
 
 class Market:
     """A class that provides data feed for multiple assets.
@@ -51,6 +53,12 @@ class Market:
         if observer in self.observers:
             self.observers.remove(observer)
             
+    def notify_observer(self,observer,data):
+        """
+        Notify a single observer with the updated market data.
+        """
+        observer.update(data)
+            
     def notify_observers(self):
         """
         Notify all registered observers with the updated market data.
@@ -60,7 +68,8 @@ class Market:
                         if not (isinstance(observer, Trade) and observer.status in [TradeStatus.CLOSED, TradeStatus.REJECTED])]
         
         # Update the remaining observers with the new data
-        for observer in self.observers:
-            observer.update(self.data)
+        with multiprocessing.Pool() as pool:
+            pool.starmap(self.notify_observer, [(observer, self.data) for observer in self.observers ])
+
 
 
