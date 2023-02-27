@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from typing import Any
 
 class Clock:
@@ -19,11 +20,21 @@ class Clock:
         self.observers = []
         
 
-    def reset(self) -> None:
+    def reset(self, random=False) -> None:
         """
-        Reset the clock to its start timestamp.
+        Reset the clock to the start time or a random time within the given range.
+
+        Parameters:
+        random (bool, optional): If True, sets the timestamp to a random time within the given range. Defaults to False.
+
         """
-        self.timestamp = self.start_timestamp
+        if random:
+            timestamps = pd.date_range(start=self.start_timestamp,end=self.end_timestamp,freq=self.timeframe)
+            # select a random timestamp from the list of timestamps
+            self.timestamp = self.start_timestamp + np.random.randint(0,len(timestamps))*self.timeframe
+        else:
+            self.timestamp = self.start_timestamp
+        
         self.reset_observers()
         self.notify_observers()
 
@@ -41,7 +52,16 @@ class Clock:
         self.timestamp = next_timestamp
         self.notify_observers()
         return self.timestamp
-
+    
+    def advance(self, steps_number:int) -> None:
+        """
+        Increment the clock by the given steps number.
+        
+        Returns:
+        pd.Timestamp: The current time of the clock.
+        """
+        for i in range(steps_number):
+            self.next()
 
     def currentTime(self) -> pd.Timestamp:
         """
