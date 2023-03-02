@@ -9,7 +9,6 @@ class Broker:
     Attributes:
         trades (list): List of trades made by the broker.
         market (Market): Market instance that the broker is trading on.
-        discount (float, optional): Discount factor used for computing trade price.
         commission (float, optional): Commission charged by the broker per trade.
 
     Methods:
@@ -20,7 +19,6 @@ class Broker:
     def __init__(
         self,
         market:Market,
-        discount: Optional[float] = 0.9,
         commission: Optional[float] = 0.0
     ):
         """
@@ -28,12 +26,10 @@ class Broker:
 
         Args:
             market (Market): Market instance that the broker is trading on.
-            discount (float, optional): Discount factor used for computing trade price.
             commission (float, optional): Commission charged by the broker per trade.
         """
         self.trades :List[Trade] = []
         self.market = market
-        self.discount = discount
         self.commision = commission
         
     def openTrade(
@@ -69,7 +65,6 @@ class Broker:
             leverage,
             stop_loss=stop_loss,
             risk_reward=risk_reward,
-            discount=self.discount,
             commission=self.commision
             )
         self.market.register_observer(trade)
