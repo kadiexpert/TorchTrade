@@ -75,4 +75,26 @@ class TechnicalIndicators:
         ema_values = talib.EMA(df[price],timeperiod=timeperiod)
 
         return ema_values
+    
+    @staticmethod
+    def rsi(df):
+        """
+        Calculates the RSI  indicator for the input dataframe.
+        Returns numpy array with the calculated values
+        """
+        # Get the RSI parameters from the config dictionary
+        if 'rsi' not in indicators_config or 'timeperiod' not in indicators_config['rsi'] or 'price' not in indicators_config['rsi'] :
+            raise ValueError("rsi parameters not found in the config file.")
+        
+        price = indicators_config['rsi']['price']
+        timeperiod = indicators_config['rsi']['timeperiod']
+        
+        # Check that the necessary columns exist in the dataframe
+        if price not in  df.columns:
+            raise ValueError(f"Input dataframe must contain colum: {price}")
+
+        # Calculate the rsi indicator using talib
+        rsi_values = talib.RSI(df[price],timeperiod=timeperiod)
+
+        return rsi_values
 
