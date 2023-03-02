@@ -1,6 +1,6 @@
 from torchtrade.components import Market, Trade, TradeDirection, TradeStatus
 from typing import Optional,List
-import pandas as pd
+from tabulate import tabulate
 
 class Broker:
     """
@@ -39,7 +39,6 @@ class Broker:
         direction: TradeDirection,
         quantity: float,
         leverage: float,
-        execution_timestamp: Optional[float] = None,
         stop_loss: Optional[float] = None,
         risk_reward: Optional[float] = None,
     ):
@@ -112,16 +111,34 @@ class Broker:
     def reset(self):
         self.trades = []
         
-    
+        
+    def info(self) -> dict: 
+        """Return broker information as Dictionnary
+
+        Returns:
+            dict: Broker info
+        """
+        info = {
+            "Timestamp": self.market.timestamp,
+            "Number of trades" : len(self.trades),
+            "Realized Profit": self.get_realized_profit(),
+            "Unrealized Profit": self.get_unrealized_profit(),
+            "Closed Trades Count": self.closed_trades_count(),
+            "Open Trades Count": self.open_trades_count(),
+            "Winning Trades Count": self.winning_trades_count(),
+            "Losing Trades Count" : self.losing_trades_count(),
+            "Win Rate" : "{:.2%}".format(self.winning_trades_count()/self.closed_trades_count()) if  self.closed_trades_count()> 0 else None 
+        }
+        return info
+        
     def __str__(self) -> str: 
-        return  f"""
-Timestamp: {self.market.timestamp}
-Number of trades : {len(self.trades)}
-Realized Profit: {self.get_realized_profit()}
-Unrealized Profit: {self.get_unrealized_profit()}
-Closed Trades Count: {self.closed_trades_count()}
-Open Trades Count: {self.open_trades_count()}
-Winning Trades Count: {self.winning_trades_count()}
-Losing Trades Count : {self.losing_trades_count()}
-Winning Rate : {self.winning_trades_count()/self.closed_trades_count() if  self.closed_trades_count()> 0 else None }
-"""
+        """Broker info as String
+
+        Returns:
+            str: Broker info
+        """
+        info = self.info()
+        headers = ["Key", "Value"]
+        rows = [[k, v] for k, v in info.items()]
+        return tabulate(rows, headers=headers)
+            
