@@ -38,8 +38,6 @@ class Trade:
         The stop loss level of the trade as a percentage. If None, there is no stop loss.
     risk_reward : Optional[float], default=None
         The risk reward ratio of the trade. If None, there is no take profit.
-    discount : Optional[float], default=0.9
-        The discount factor used to calculate the discounted PNL.
     commission : Optional[float], default=0.0
         The commission rate ex 0.01 for 1% commission
 
@@ -63,7 +61,6 @@ class Trade:
         execution_timestamp: Optional[float] = None,
         stop_loss: Optional[float] = None,
         risk_reward: Optional[float] = None,
-        discount: Optional[float] = 0.9,
         commission: Optional[float] = 0.0
     ):
         """Initializes a new trade object."""
@@ -77,7 +74,6 @@ class Trade:
         self.leverage = leverage
         self.stop_loss = stop_loss
         self.risk_reward = risk_reward
-        self.discount = discount
         self.commission = commission
         
         #Trade Status
@@ -102,8 +98,6 @@ class Trade:
         self.realized_pnl = 0
         self.unrealized_pnl_percentage = 0
         self.realized_pnl_percentage = 0
-        self.unrealized_pnl_percentage_discounted = 0
-        self.realized_pnl_percentage_discounted = 0
     
     def update(self, market_data: pd.DataFrame) -> None:
         """
@@ -159,9 +153,6 @@ class Trade:
         # Calculate the unrealized P&L and its percentage
         self.unrealized_pnl = self.direction.value * ((self.quantity * price) - (self.quantity * self.fill_price))
         self.unrealized_pnl_percentage = self.unrealized_pnl / (self.quantity * self.fill_price)
-        
-        # Apply the trade's discount factor to the unrealized P&L percentage
-        self.unrealized_pnl_percentage_discounted = self.unrealized_pnl_percentage * (self.discount ** self.time_in_trade)
 
     
     def __reject_trade(self) -> None:
@@ -273,11 +264,9 @@ class Trade:
         self.realized_pnl -= price*self.quantity*self.commission
         self.realized_pnl += self.direction.value* ((self.quantity * price) - (self.quantity*self.fill_price))
         self.realized_pnl_percentage =  self.realized_pnl /(self.quantity*self.fill_price)
-        self.realized_pnl_percentage_discounted = self.realized_pnl_percentage * (self.discount**self.time_in_trade) 
         
         self.unrealized_pnl = 0
         self.unrealized_pnl_percentage =  0
-        self.unrealized_pnl_percentage_discounted = 0
        
 
 
@@ -330,9 +319,7 @@ Trade Details:
     Status: {self.status}
     Realized P&L %: {self.realized_pnl_percentage}
     Realized P&L : {self.realized_pnl}
-    Realized Discounted P&L% : {self.realized_pnl_percentage_discounted}
     Unrealized P&L %: {self.unrealized_pnl_percentage}
     Unrealized P&L : {self.unrealized_pnl}
-    Unrealized Discounted P&L% : {self.unrealized_pnl_percentage_discounted}
     Paid Commission : {self.paid_commission}
             """
