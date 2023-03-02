@@ -26,7 +26,6 @@ class Market:
         since (datetime): The earliest timestamp to consider when loading data.
         until (Optional[datetime]): The latest timestamp to consider when loading data.
         timestamp (Optional[pd.Timestamp]): The current timestamp of the market.
-        current_market_data(pd.DataFrame): the current Market Data
         observers (List[Observer]): A list of observers.
     """
     
@@ -52,7 +51,6 @@ class Market:
         self.until = until
         # Current timestamp and observers
         self.timestamp = None
-        self.current_market_data = None
         self.observers = []
         
     def prepare(self):
