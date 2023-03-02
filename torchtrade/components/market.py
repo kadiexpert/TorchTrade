@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from tabulate import tabulate
 from datetime import datetime
 from typing import List, Optional, Tuple
 from torchtrade.components.trade import Trade, TradeStatus
@@ -85,6 +86,9 @@ class Market:
 
         # Set the current timestamp to the since timestamp
         self.timestamp = self.since
+        
+        # Print
+        print(self)
 
         
     def reset(self, rollback_periods: int = 0, random: bool = False) -> Tuple[pd.Timestamp,pd.DataFrame]:
@@ -170,7 +174,6 @@ class Market:
         
     def __check_data(self,data:pd.DataFrame):
         """Check if the data meets the specified conditions."""
-        print("Checking market Data")
         if data.empty:
             raise ValueError("Data is empty.")
         if not isinstance(data.index, pd.MultiIndex) or data.index.names != ["symbol", "timestamp"]:
@@ -181,7 +184,7 @@ class Market:
             raise ValueError("Data contains NaN values.")
         if not data.index.is_unique:
             raise ValueError("Data contains non-unique index.")
-        print("Market Data Check successful")
+        print("/ Market data check completed successfully")
     
     def next(self,  rollback_periods :int = 0) ->  Tuple[pd.Timestamp,pd.DataFrame]:
         """
@@ -222,5 +225,29 @@ class Market:
             
     def market_ended(self) ->  bool :
         return self.timestamp >= self.until
+    
+    
+    def info(self) -> dict :
+        """Returns a dictionnary of market information
+
+        Returns:
+            dict: Market information
+        """
+        info = {
+            "TimeFrame": self.timeframe,
+            "Symbols": ', '.join(self.symbols),
+            "Since": self.since,
+            "Until":self.until,
+            "Timestamps Count" : self.data.index.get_level_values(1).unique().shape[0]           
+        }
+        return info
+        
+    def __str__(self) -> str:
+        """Return a string of market information
+        """
+        info = self.info()
+        headers = ["Key", "Value"]
+        rows = [[k, v] for k, v in info.items()]
+        return tabulate(rows, headers=headers)
             
     
