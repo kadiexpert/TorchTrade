@@ -154,7 +154,6 @@ class BinanceFetcher:
         data.sort_index(inplace=True)
         
         print("\ Data Fetched Successfully!")
-        print(tabulate(self._get_data_info(data), headers="keys"))
         
         return data
     
@@ -186,17 +185,3 @@ class BinanceFetcher:
                 data.loc[(data.index.get_level_values('symbol') == symbol) & (data['isTraded'] == 1), indicator] = method(df)
                 
         return data
-    
-    def _get_data_info(self,data: pd.DataFrame)-> dict:
-        """
-        Returns a dictionary of information about the given DataFrame
-        """
-        info = {
-            "Source" : [self.source],
-            "TimeFrame": [self.timeframe],
-            "Symbols": [', '.join(self.symbols)],
-            "Since": [data.index.get_level_values(1).min().strftime("%Y-%m-%d %H:%M:%S")],
-            "Until":[data.index.get_level_values(1).max().strftime("%Y-%m-%d %H:%M:%S")],
-            "Timestamps Count" : [str(data.index.get_level_values(1).unique().shape[0])]            
-        }
-        return info
