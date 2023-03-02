@@ -1,6 +1,7 @@
 from typing import Tuple, Optional
 import pandas as pd
 from enum import Enum
+from tabulate import tabulate
 
 
 class TradeDirection(Enum):
@@ -295,31 +296,41 @@ class Trade:
             raise KeyError("Missing columns in data.")
             
         return timestamp,is_traded, open_price, high_price, low_price, close_price
-
     
-    def __str__(self) -> str:
-        """
-        Return a string representation of the trade.
+    
+    def info(self) -> dict:
+        """Returns trade information
 
         Returns:
-            str: A string representation of the trade.
+            dict: Trade information
         """
-        return f"""
-Last Update Timestamp: {self.last_update_timestamp}
-Symbol: {self.symbol}
-Trade Details:
-    Execution time: {self.execution_timestamp}
-    Closing Time: {self.close_timestamp}
-    Entry Price: {self.fill_price}
-    Time In Trade : {self.time_in_trade}
-    Stop Loss %: {self.stop_loss}
-    Risk Reward: {self.risk_reward}
-    Stop Loss Price: {self.stop_loss_price}
-    Take Profit Price: {self.take_profit_price}
-    Status: {self.status}
-    Realized P&L %: {self.realized_pnl_percentage}
-    Realized P&L : {self.realized_pnl}
-    Unrealized P&L %: {self.unrealized_pnl_percentage}
-    Unrealized P&L : {self.unrealized_pnl}
-    Paid Commission : {self.paid_commission}
-            """
+        info = {
+            "Trade ID" : self.id,
+            "Last Update Timestamp" :self.last_update_timestamp,
+            "Symbol": self.symbol,
+            "Status": self.status,
+            "Execution time" :self.execution_timestamp,
+            "Closing Time": self.close_timestamp,
+            "Entry Price": self.fill_price,
+            "Quantity": self.quantity,
+            "Time In Trade" : self.time_in_trade,
+            "Stop Loss%": "{:.2%}".format(self.stop_loss) if self.stop_loss is not None else None,
+            "Risk Reward": self.risk_reward,
+            "Stop Loss Price": self.stop_loss_price,
+            "Take Profit Price": self.take_profit_price,
+            "Realized P&L%": "{:.2%}".format(self.realized_pnl_percentage) if self.realized_pnl_percentage is not None else None, 
+            "Realized P&L" : self.realized_pnl,
+            "Unrealized P&L%": "{:.2%}".format(self.unrealized_pnl_percentage) if self.unrealized_pnl_percentage is not None else None,
+            "Unrealized P&L": self.unrealized_pnl,
+            "Paid Commission" : self.paid_commission
+        }
+        return info
+
+    def __str__(self) -> str:
+        """
+        Return Trade Info as a tabulated String
+        """
+        info = self.info()
+        headers = ["Key", "Value"]
+        rows = [[k, v] for k, v in info.items()]
+        return tabulate(rows, headers=headers)
