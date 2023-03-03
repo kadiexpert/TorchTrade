@@ -120,7 +120,7 @@ class Market:
         else:
             # Set the timestamp to the start time plus `window_size` intervals
             self.timestamp = self.since + (rollback_periods) * self.__timedelta
-
+        
         # Clear the list of observers and update the market data
         self.observers = []
         self.__update_mktData()
@@ -194,7 +194,7 @@ class Market:
         self.__check_preparation()
         next_timestamp = self.timestamp + self.__timedelta
         if next_timestamp > self.until:
-             ValueError("Current time has passed the end timestamp.")
+            raise ValueError("Current time has passed the end timestamp.")
              
         self.timestamp = next_timestamp
         self.__update_mktData()
