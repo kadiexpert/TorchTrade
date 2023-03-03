@@ -29,7 +29,7 @@ class BinanceFetcher:
             until: Optional[datetime]=None,
             include_technical_indicators : Optional[bool]=True
         ):
-        self.source = "binance"
+        self.source = "binanceus"
         self.symbols = symbols
         self.timeframe = timeframe
         self.since = since
