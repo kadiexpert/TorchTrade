@@ -40,7 +40,7 @@ class Market:
         """Initialize a Market object."""
         self.symbols = symbols
         self.timeframe = timeframe
-        self.__timedelta = pd.Timedelta(timeframe)
+        self.timedelta = pd.Timedelta(timeframe)
         self.include_technical_indicators = include_technical_indicators
         # Prepared data
         self.__prepared = False
@@ -108,7 +108,7 @@ class Market:
         self.__check_preparation()
 
          # Generate a list of all timestamps within the specified rang
-        timestamps = pd.date_range(start=self.since, end=self.until, freq=self.__timedelta)
+        timestamps = pd.date_range(start=self.since, end=self.until, freq=self.timedelta)
         
         if rollback_periods >= len(timestamps): 
             raise ValueError(f"Rollback_periods exceeds the timestamps count")
@@ -116,10 +116,10 @@ class Market:
         # Set the timestamp to the start time plus `window_size` intervals or a random time within the given range
         if random:
             # Set the timestamp to a random time within the specified range
-            self.timestamp = self.since + np.random.randint(rollback_periods, len(timestamps)) * self.__timedelta
+            self.timestamp = self.since + np.random.randint(rollback_periods, len(timestamps)) * self.timedelta
         else:
             # Set the timestamp to the start time plus `window_size` intervals
-            self.timestamp = self.since + (rollback_periods) * self.__timedelta
+            self.timestamp = self.since + (rollback_periods) * self.timedelta
         
         # Clear the list of observers and update the market data
         self.observers = []
@@ -140,7 +140,7 @@ class Market:
         """
 
         end_timestamp = timestamp
-        start_timestamp = end_timestamp - rollback_periods*self.__timedelta
+        start_timestamp = end_timestamp - rollback_periods*self.timedelta
 
         # Check if timestamps are within the valid range
         if end_timestamp > self.until:
@@ -167,7 +167,16 @@ class Market:
         
         # Update the remaining observers with the new data
         for observer in self.observers:
-            observer.update(self.last_market_data)
+            self.__notify_observer(observer)
+            
+            
+    def __notify_observer(self,observer):
+        """Notify the observer with the updated market data
+        """
+        symbol = observer.symbol 
+        row = self.last_market_data.loc[(symbol,self.timestamp)]
+        open, high, low, close, is_traded = row[['open', 'high', 'low', 'close', 'isTraded']].values
+        observer.update(symbol,self.timestamp,is_traded,open,high,low,close)
             
         
     def __check_data(self,data:pd.DataFrame):
@@ -192,7 +201,7 @@ class Market:
         pd.Timestamp: The current time of the clock.
         """
         self.__check_preparation()
-        next_timestamp = self.timestamp + self.__timedelta
+        next_timestamp = self.timestamp + self.timedelta
         if next_timestamp > self.until:
             raise ValueError("Current time has passed the end timestamp.")
              
@@ -213,7 +222,7 @@ class Market:
         """
         self.__check_preparation()
         self.observers.append(observer)
-        observer.update(self.last_market_data)
+        self.__notify_observer(observer)
         
     def unregister_observer(self, observer):
         """Unregister an observer from the market."""
@@ -247,5 +256,3 @@ class Market:
         headers = ["Key", "Value"]
         rows = [[k, v] for k, v in info.items()]
         return tabulate(rows, headers=headers)
-            
-    
