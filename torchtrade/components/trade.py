@@ -59,6 +59,7 @@ class Trade:
         direction: TradeDirection,
         quantity: float,
         leverage: float,
+        timeframe: pd.Timedelta,
         execution_timestamp: Optional[float] = None,
         stop_loss: Optional[float] = None,
         risk_reward: Optional[float] = None,
@@ -76,6 +77,7 @@ class Trade:
         self.stop_loss = stop_loss
         self.risk_reward = risk_reward
         self.commission = commission
+        self.timeframe = timeframe
         
         #Trade Status
         self.status = TradeStatus.CREATED
@@ -100,20 +102,24 @@ class Trade:
         self.unrealized_pnl_percentage = 0
         self.realized_pnl_percentage = 0
     
-    def update(self, market_data: pd.DataFrame) -> None:
+    def update(
+            self, 
+            symbol: str, 
+            timestamp: pd.Timestamp, 
+            is_traded : bool, 
+            open:float,
+            high:float,
+            low:float,
+            close:float
+        ) -> None:
         """
         Update the trade based on the provided market data.
-
-        Args:
-            market_data (pd.DataFrame): The market data.
 
         Returns:
             None
         """
         if self.status is TradeStatus.CLOSED or self.status is TradeStatus.REJECTED:
             return
-
-        timestamp, is_traded, open_price, high_price, low_price, close_price = self.__process_data(market_data)
 
         if not is_traded:
             return
@@ -122,19 +128,20 @@ class Trade:
 
         if self.status is TradeStatus.CREATED:
             if timestamp == self.execution_timestamp:
-                self.__fill_trade(close_price)
+                self.__fill_trade(close)
             elif timestamp > self.execution_timestamp:
                 self.__reject_trade()
         else:
             # Update trade metrics
-            self.__update_metrics(close_price)
+            #self.__update_metrics(close)
             
             # Check if stop loss is hit
-            if self.__has_stop_loss() and self.__is_stop_loss_hit(high_price, low_price):
+            if self.__has_stop_loss() and self.__is_stop_loss_hit(high, low):
                 self.__close_trade(timestamp, self.stop_loss_price)
+                return
 
             # Check if take profit is hit
-            if self.__has_take_profit() and self.__is_take_profit_hit(high_price, low_price):
+            if self.__has_take_profit() and self.__is_take_profit_hit(high, low):
                 self.__close_trade(timestamp, self.take_profit_price)
                 
             
@@ -260,44 +267,17 @@ class Trade:
         self.close_price = price
         self.close_timestamp = timestamp
         self.status = TradeStatus.CLOSED
+        self.time_in_trade = len(pd.date_range(self.execution_timestamp,self.close_timestamp,freq=self.timeframe))-1
         self.paid_commission += price*self.quantity*self.commission
         
         self.realized_pnl -= price*self.quantity*self.commission
         self.realized_pnl += self.direction.value* ((self.quantity * price) - (self.quantity*self.fill_price))
         self.realized_pnl_percentage =  self.realized_pnl /(self.quantity*self.fill_price)
-        
+                
         self.unrealized_pnl = 0
         self.unrealized_pnl_percentage =  0
        
-
-
-    def __process_data(self, data: pd.DataFrame) -> Tuple[pd.Timestamp, float, float, float, float, bool]:
-        """
-        Extract the relevant trade data from the given DataFrame.
-
-        Args:
-            data (pd.DataFrame): The DataFrame containing the trade data.
-
-        Returns:
-            Tuple[pd.Timestamp, float, float, float, float, bool]: A tuple containing the timestamp,
-            is_traded flag, open price, high price, low price, and close price.
-        """
-        # Check if data contains a single timestamp
-        if len(data.index.get_level_values(1).unique()) != 1:
-            raise ValueError("Data must contain a single timestamp")
-
-        # Select the row corresponding to the traded asset
-        row = data.loc[(self.symbol, data.index.get_level_values(1)[0])]
-
-        try:
-            open_price, high_price, low_price, close_price, is_traded = row[['open', 'high', 'low', 'close', 'isTraded']].values
-            timestamp = data.index.get_level_values(1)[0]
-        except KeyError:
-            raise KeyError("Missing columns in data.")
-            
-        return timestamp,is_traded, open_price, high_price, low_price, close_price
-    
-    
+        
     def info(self) -> dict:
         """Returns trade information
 
