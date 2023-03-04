@@ -62,6 +62,7 @@ class Broker:
             direction,
             quantity,
             leverage,
+            self.market.timedelta,
             stop_loss=stop_loss,
             risk_reward=risk_reward,
             commission=self.commision
